@@ -1,0 +1,4 @@
+rule_id,dataset,severity,affected_record,column,invalid_value
+DQ-CUS-003,customers,High,C002,email,invalid-email
+DQ-MET-002,meter_readings,Critical,M004,customer_id,C999
+DQ-MET-004,meter_readings,High,M002,consumption_kwh,-50

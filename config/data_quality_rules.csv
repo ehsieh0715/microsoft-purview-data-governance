@@ -1,0 +1,21 @@
+rule_id,dataset,column,dimension,check_type,target,severity,record_id_column,parameter
+DQ-CUS-001,customers,customer_id,Completeness,not_null,100,Critical,customer_id,
+DQ-CUS-002,customers,customer_id,Uniqueness,unique,100,Critical,customer_id,
+DQ-CUS-003,customers,email,Validity,email_format,99,High,customer_id,
+DQ-CUS-004,customers,customer_type,Validity,allowed_values,100,Medium,customer_id,"Residential|Commercial"
+DQ-CUS-005,customers,status,Validity,allowed_values,100,High,customer_id,"Active|Inactive"
+DQ-BIL-001,billing,invoice_id,Completeness,not_null,100,Critical,invoice_id,
+DQ-BIL-002,billing,invoice_id,Uniqueness,unique,100,Critical,invoice_id,
+DQ-BIL-003,billing,customer_id,Referential Integrity,foreign_key,100,Critical,invoice_id,"customers.customer_id"
+DQ-BIL-004,billing,amount_eur,Validity,min_value,100,High,invoice_id,0
+DQ-BIL-005,billing,payment_status,Validity,allowed_values,100,High,invoice_id,"Paid|Outstanding"
+DQ-BIL-006,billing,billing_date,Completeness,not_null,100,High,invoice_id,
+DQ-MET-001,meter_readings,meter_id,Completeness,not_null,100,Critical,meter_id,
+DQ-MET-002,meter_readings,customer_id,Referential Integrity,foreign_key,100,Critical,meter_id,"customers.customer_id"
+DQ-MET-003,meter_readings,reading_date,Completeness,not_null,100,High,meter_id,
+DQ-MET-004,meter_readings,consumption_kwh,Validity,min_value,100,High,meter_id,0
+DQ-TAR-001,tariffs,tariff_id,Completeness,not_null,100,Critical,tariff_id,
+DQ-TAR-002,tariffs,tariff_id,Uniqueness,unique,100,Critical,tariff_id,
+DQ-TAR-003,tariffs,tariff_name,Completeness,not_null,100,High,tariff_id,
+DQ-TAR-004,tariffs,energy_type,Validity,allowed_values,100,High,tariff_id,"Electricity|Gas"
+DQ-TAR-005,tariffs,unit_rate,Validity,min_exclusive,100,High,tariff_id,0

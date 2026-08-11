@@ -1,0 +1,4 @@
+issue_id,rule_id,dataset,severity,affected_record,column,invalid_value,domain,issue_description,data_owner,data_steward,status,root_cause,remediation_action
+DQI-001,DQ-CUS-003,customers,High,C002,email,invalid-email,Customer,Invalid customer email format detected,Head of Customer Operations,Customer Data Steward,Open,,
+DQI-002,DQ-MET-002,meter_readings,Critical,M004,customer_id,C999,Metering,Meter reading references an unknown customer ID,Head of Energy Operations,Metering Data Steward,Open,,
+DQI-003,DQ-MET-004,meter_readings,High,M002,consumption_kwh,-50,Metering,Negative energy consumption value detected,Head of Energy Operations,Metering Data Steward,Open,,
