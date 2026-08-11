@@ -1,7 +1,7 @@
 rule_id,dataset,column,dimension,records_checked,failed_records,pass_rate,target,status,severity
 DQ-CUS-001,customers,customer_id,Completeness,4,0,100.0,100.0,PASS,Critical
 DQ-CUS-002,customers,customer_id,Uniqueness,4,0,100.0,100.0,PASS,Critical
-DQ-CUS-003,customers,email,Validity,3,0,100.0,99.0,PASS,High
+DQ-CUS-003,customers,email,Validity,3,1,66.67,99.0,FAIL,High
 DQ-CUS-004,customers,customer_type,Validity,4,0,100.0,100.0,PASS,Medium
 DQ-CUS-005,customers,status,Validity,4,0,100.0,100.0,PASS,High
 DQ-BIL-001,billing,invoice_id,Completeness,4,0,100.0,100.0,PASS,Critical
@@ -11,9 +11,9 @@ DQ-BIL-004,billing,amount_eur,Validity,4,0,100.0,100.0,PASS,High
 DQ-BIL-005,billing,payment_status,Validity,4,0,100.0,100.0,PASS,High
 DQ-BIL-006,billing,billing_date,Completeness,4,0,100.0,100.0,PASS,High
 DQ-MET-001,meter_readings,meter_id,Completeness,4,0,100.0,100.0,PASS,Critical
-DQ-MET-002,meter_readings,customer_id,Referential Integrity,4,0,100.0,100.0,PASS,Critical
+DQ-MET-002,meter_readings,customer_id,Referential Integrity,4,1,75.0,100.0,FAIL,Critical
 DQ-MET-003,meter_readings,reading_date,Completeness,4,0,100.0,100.0,PASS,High
-DQ-MET-004,meter_readings,consumption_kwh,Validity,4,0,100.0,100.0,PASS,High
+DQ-MET-004,meter_readings,consumption_kwh,Validity,4,1,75.0,100.0,FAIL,High
 DQ-TAR-001,tariffs,tariff_id,Completeness,3,0,100.0,100.0,PASS,Critical
 DQ-TAR-002,tariffs,tariff_id,Uniqueness,3,0,100.0,100.0,PASS,Critical
 DQ-TAR-003,tariffs,tariff_name,Completeness,3,0,100.0,100.0,PASS,High
