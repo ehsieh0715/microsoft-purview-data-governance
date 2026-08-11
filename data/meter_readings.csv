@@ -1,0 +1,5 @@
+meter_id,customer_id,reading_date,consumption_kwh
+M001,C001,2026-07-01,340
+M002,C002,2026-07-01,-50
+M003,C003,2026-07-01,3250
+M004,C999,2026-07-01,210
