@@ -1,0 +1,4 @@
+tariff_id,tariff_name,energy_type,unit_rate
+T001,Residential Standard,Electricity,0.32
+T002,Residential Gas,Gas,0.11
+T003,Business Electricity,Electricity,0.27

@@ -1,0 +1,5 @@
+customer_id,first_name,last_name,email,phone,address,customer_type,tariff_id,status
+C001,Emma,Murphy,emma.murphy@example.com,0871234567,Dublin,Residential,T001,Active
+C002,Liam,Kelly,liam.kelly@example.com,0862345678,Cork,Residential,T001,Active
+C003,Ava,Byrne,,0853456789,Galway,Commercial,T003,Active
+C004,Noah,Smith,noah.smith@example.com,,Dublin,Residential,T002,Active

@@ -1,0 +1,5 @@
+meter_id,customer_id,meter_type,installation_date,status
+M001,C001,Smart,2024-01-15,Active
+M002,C002,Smart,2024-03-20,Active
+M003,C003,Smart,2023-11-10,Active
+M004,C004,Smart,2025-02-01,Active

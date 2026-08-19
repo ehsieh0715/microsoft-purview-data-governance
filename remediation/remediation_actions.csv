@@ -1,0 +1,4 @@
+rule_id,dataset,record_id_column,record_id,column,old_value,new_value,remediation_action,status
+DQ-CUS-003,customers,customer_id,C002,email,invalid-email,liam.kelly@example.com,Correct invalid email format,Approved
+DQ-MTR-003,meters,meter_id,M004,customer_id,C999,C004,Correct meter ownership reference,Approved
+DQ-MET-005,meter_readings,reading_id,R002,consumption_kwh,-250,250,Correct negative consumption value,Approved

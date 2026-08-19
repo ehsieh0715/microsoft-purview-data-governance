@@ -1,4 +1,4 @@
 rule_id,domain,issue_description,data_owner,data_steward
 DQ-CUS-003,Customer,Invalid customer email format detected,Head of Customer Operations,Customer Data Steward
-DQ-MET-002,Metering,Meter reading references an unknown customer ID,Head of Energy Operations,Metering Data Steward
-DQ-MET-004,Metering,Negative energy consumption value detected,Head of Energy Operations,Metering Data Steward
+DQ-MTR-003,Metering,Meter references an unknown customer ID,Head of Energy Operations,Metering Data Steward
+DQ-MET-005,Metering,Negative energy consumption value detected,Head of Energy Operations,Metering Data Steward

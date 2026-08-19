@@ -4,46 +4,85 @@ import pandas as pd
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-RESULTS_DIR = BASE_DIR / "data-quality" / "results"
-CONFIG_DIR = BASE_DIR / "config"
+
+FAILED_RECORDS_FILE = (
+    BASE_DIR
+    / "data-quality"
+    / "results"
+    / "raw"
+    / "failed-records.csv"
+)
+
+GOVERNANCE_MAPPING_FILE = (
+    BASE_DIR
+    / "config"
+    / "governance_mapping.csv"
+)
+
+OUTPUT_FILE = (
+    BASE_DIR
+    / "data-quality"
+    / "results"
+    / "raw"
+    / "data-quality-issues.csv"
+)
 
 
-def generate_issue_register():
-    failed_records = pd.read_csv(
-        RESULTS_DIR / "failed-records.csv"
-    )
-
-    governance_mapping = pd.read_csv(
-        CONFIG_DIR / "governance_mapping.csv"
-    )
-
+def build_issue_register(failed_records, governance_mapping):
     issues = failed_records.merge(
         governance_mapping,
         on="rule_id",
         how="left",
+        validate="many_to_one",
     )
 
     issues.insert(
         0,
         "issue_id",
-        [f"DQI-{i:03d}" for i in range(1, len(issues) + 1)],
+        [
+            f"ISSUE-{i:03d}"
+            for i in range(1, len(issues) + 1)
+        ],
     )
 
     issues["status"] = "Open"
-    issues["root_cause"] = ""
-    issues["remediation_action"] = ""
 
     return issues
 
 
-if __name__ == "__main__":
-    issue_register = generate_issue_register()
+def main():
+    if not FAILED_RECORDS_FILE.exists():
+        raise FileNotFoundError(
+            "Raw failed records not found. "
+            "Run data_quality_checks.py --stage raw first."
+        )
 
-    output_file = RESULTS_DIR / "data-quality-issues.csv"
+    failed_records = pd.read_csv(FAILED_RECORDS_FILE)
 
-    issue_register.to_csv(
-        output_file,
+    governance_mapping = pd.read_csv(
+        GOVERNANCE_MAPPING_FILE,
+        keep_default_na=False,
+    )
+
+    issues = build_issue_register(
+        failed_records,
+        governance_mapping,
+    )
+
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    issues.to_csv(
+        OUTPUT_FILE,
         index=False,
     )
 
-    print(issue_register.to_string(index=False))
+    print("\nDATA QUALITY ISSUE REGISTER")
+    print(issues.to_string(index=False))
+    print(f"\nIssue register written to: {OUTPUT_FILE}")
+
+
+if __name__ == "__main__":
+    main()

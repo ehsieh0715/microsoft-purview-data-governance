@@ -1,0 +1,5 @@
+invoice_id,customer_id,billing_date,amount_eur,payment_status
+INV001,C001,2026-07-01,126.40,Paid
+INV002,C002,2026-07-01,94.20,Outstanding
+INV003,C003,2026-07-01,870.50,Paid
+INV004,C004,2026-07-01,115.30,Outstanding
