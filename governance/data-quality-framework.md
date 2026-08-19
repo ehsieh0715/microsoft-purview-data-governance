@@ -2,91 +2,194 @@
 
 ## Purpose
 
-This framework defines the approach used to monitor, assess, and manage data quality across the Customer, Billing, Metering, and Tariff data domains.
+This framework defines how data quality is measured, monitored, and governed across the Customer, Billing, Metering, and Tariff data domains.
 
-The objective is to establish measurable data quality expectations, assign accountability, identify data issues, and support consistent remediation and escalation.
-
-Data quality rules are defined according to business requirements and are designed to be implemented through automated monitoring where appropriate.
+Data quality rules are maintained as configuration and executed through a reusable Python rule engine. Failed records are converted into governance issues with defined ownership, followed by approved remediation and revalidation.
 
 ## Data Quality Dimensions
 
-| Dimension | Definition | Example |
-|---|---|---|
-| Completeness | Required data is present and not missing. | Every invoice must contain a customer ID. |
-| Uniqueness | Records or identifiers that should be unique contain no duplicates. | Each invoice ID must be unique. |
-| Validity | Data conforms to defined formats, domains, or business rules. | Invoice amounts must not be negative. |
-| Consistency | Related data follows consistent definitions and values across datasets. | Customer IDs follow the same identifier convention across datasets. |
-| Referential Integrity | References to records in another dataset correspond to valid existing records. | Every billing customer ID must exist in the customer dataset. |
-| Timeliness | Data is available and recorded within the required business timeframe. | Meter readings should be received within the expected reporting period. |
+The framework evaluates data using the following dimensions:
 
-## Data Quality Rule Severity
+| Dimension | Description | Example |
+| --- | --- | --- |
+| Completeness | Required data is populated. | Customer ID must not be null. |
+| Uniqueness | Identifiers expected to be unique contain no duplicates. | Reading ID must be unique. |
+| Validity | Values conform to defined formats, ranges, or permitted values. | Energy consumption must not be negative. |
+| Referential Integrity | Relationships between datasets reference valid records. | A meter must reference an existing customer. |
 
-| Severity | Definition | Expected Response |
-|---|---|---|
-| Critical | Issue could materially affect regulatory reporting, customer outcomes, financial reporting, or critical operations. | Immediate investigation and escalation to the relevant Data Owner. |
-| High | Significant issue affecting important analytics or operational processes. | Prioritised remediation by the responsible Data Steward. |
-| Medium | Issue has limited business impact but should be corrected. | Track and remediate through normal governance processes. |
-| Low | Minor issue with minimal immediate business impact. | Monitor and resolve during routine maintenance. |
+## Rule Configuration
 
-## Customer Domain Rules
+Data quality rules are maintained in:
 
-| Rule ID | Data Element | Dimension | Rule | Target | Severity |
-|---|---|---|---|---|---|
-| DQ-CUS-001 | customer_id | Completeness | Customer ID must not be null. | 100% | Critical |
-| DQ-CUS-002 | customer_id | Uniqueness | Customer ID must be unique. | 100% | Critical |
-| DQ-CUS-003 | email | Validity | Non-null email addresses must follow a valid email format. | >= 99% | High |
-| DQ-CUS-004 | customer_type | Validity | Customer type must be either `Residential` or `Commercial`. | 100% | Medium |
-| DQ-CUS-005 | status | Validity | Customer status must be either `Active` or `Inactive`. | 100% | High |
+`config/data_quality_rules.csv`
 
-## Billing Domain Rules
+Each rule defines:
 
-| Rule ID | Data Element | Dimension | Rule | Target | Severity |
-|---|---|---|---|---|---|
-| DQ-BIL-001 | invoice_id | Completeness | Invoice ID must not be null. | 100% | Critical |
-| DQ-BIL-002 | invoice_id | Uniqueness | Invoice ID must be unique. | 100% | Critical |
-| DQ-BIL-003 | customer_id | Referential Integrity | Every billing customer ID must exist in the customer dataset. | 100% | Critical |
-| DQ-BIL-004 | amount_eur | Validity | Invoice amount must be greater than or equal to zero. | 100% | High |
-| DQ-BIL-005 | payment_status | Validity | Payment status must be either `Paid` or `Outstanding`. | 100% | High |
-| DQ-BIL-006 | billing_date | Completeness | Billing date must not be null. | 100% | High |
+| Field | Purpose |
+| --- | --- |
+| `rule_id` | Unique identifier for the data quality rule |
+| `dataset` | Dataset evaluated by the rule |
+| `column` | Column evaluated by the rule |
+| `dimension` | Data quality dimension |
+| `check_type` | Validation logic executed by the rule engine |
+| `target` | Minimum required pass rate |
+| `severity` | Governance severity assigned when the rule fails |
+| `record_id_column` | Identifier used to trace failed records |
+| `parameter` | Optional configuration required by the check |
 
-## Metering Domain Rules
+Separating rule configuration from execution logic allows validation requirements to be maintained without hard coding individual rules into the Python workflow.
 
-| Rule ID | Data Element | Dimension | Rule | Target | Severity |
-|---|---|---|---|---|---|
-| DQ-MET-001 | meter_id | Completeness | Meter ID must not be null. | 100% | Critical |
-| DQ-MET-002 | customer_id | Referential Integrity | Every metering customer ID must exist in the customer dataset. | 100% | Critical |
-| DQ-MET-003 | reading_date | Completeness | Reading date must not be null. | 100% | High |
-| DQ-MET-004 | consumption_kwh | Validity | Energy consumption must be greater than or equal to zero. | 100% | High |
+## Data Quality Rules
 
-## Tariff Domain Rules
+### Customer
 
-| Rule ID | Data Element | Dimension | Rule | Target | Severity |
-|---|---|---|---|---|---|
-| DQ-TAR-001 | tariff_id | Completeness | Tariff ID must not be null. | 100% | Critical |
-| DQ-TAR-002 | tariff_id | Uniqueness | Tariff ID must be unique. | 100% | Critical |
-| DQ-TAR-003 | tariff_name | Completeness | Tariff name must not be null. | 100% | High |
-| DQ-TAR-004 | energy_type | Validity | Energy type must be either `Electricity` or `Gas`. | 100% | High |
-| DQ-TAR-005 | unit_rate | Validity | Unit rate must be greater than zero. | 100% | High |
+| Rule ID | Column | Dimension | Check | Target | Severity |
+| --- | --- | --- | --- | ---: | --- |
+| DQ-CUS-001 | `customer_id` | Completeness | Not null | 100% | Critical |
+| DQ-CUS-002 | `customer_id` | Uniqueness | Unique | 100% | Critical |
+| DQ-CUS-003 | `email` | Validity | Email format | 99% | High |
+| DQ-CUS-004 | `customer_type` | Validity | Residential or Commercial | 100% | Medium |
+| DQ-CUS-005 | `tariff_id` | Referential Integrity | References `tariffs.tariff_id` | 100% | High |
+| DQ-CUS-006 | `status` | Validity | Active or Inactive | 100% | High |
 
-## Data Quality Monitoring Process
+### Billing
 
-1. Data quality rules are defined with the relevant business and technical context.
-2. Data Stewards review rules, thresholds, and expected values for their domains.
-3. Automated checks evaluate datasets against approved data quality rules.
-4. Results are recorded and compared against defined quality targets.
-5. Failed rules generate data quality issues for investigation.
-6. Data Stewards investigate root causes and coordinate remediation.
-7. Critical or unresolved issues are escalated to the relevant Data Owner and, where appropriate, the Data Governance Forum.
-8. Data quality trends and remediation status are reported through governance KPIs.
+| Rule ID | Column | Dimension | Check | Target | Severity |
+| --- | --- | --- | --- | ---: | --- |
+| DQ-BIL-001 | `invoice_id` | Completeness | Not null | 100% | Critical |
+| DQ-BIL-002 | `invoice_id` | Uniqueness | Unique | 100% | Critical |
+| DQ-BIL-003 | `customer_id` | Referential Integrity | References `customers.customer_id` | 100% | Critical |
+| DQ-BIL-004 | `amount_eur` | Validity | Minimum value 0 | 100% | High |
+| DQ-BIL-005 | `payment_status` | Validity | Paid or Outstanding | 100% | High |
+| DQ-BIL-006 | `billing_date` | Completeness | Not null | 100% | High |
 
-## Microsoft Purview Implementation Mapping
+### Meter
 
-In a Microsoft Purview Enterprise environment, applicable data quality rules could be configured and monitored using Purview data quality capabilities.
+| Rule ID | Column | Dimension | Check | Target | Severity |
+| --- | --- | --- | --- | ---: | --- |
+| DQ-MTR-001 | `meter_id` | Completeness | Not null | 100% | Critical |
+| DQ-MTR-002 | `meter_id` | Uniqueness | Unique | 100% | Critical |
+| DQ-MTR-003 | `customer_id` | Referential Integrity | References `customers.customer_id` | 100% | Critical |
+| DQ-MTR-004 | `meter_type` | Validity | Smart or Traditional | 100% | Medium |
+| DQ-MTR-005 | `status` | Validity | Active or Inactive | 100% | High |
 
-The rules in this repository represent governance requirements defined for the demonstration environment. Automated execution in this project is implemented separately using Python to demonstrate rule validation, monitoring, and reporting.
+### Meter Reading
 
-## Assumptions
+| Rule ID | Column | Dimension | Check | Target | Severity |
+| --- | --- | --- | --- | ---: | --- |
+| DQ-MET-001 | `reading_id` | Completeness | Not null | 100% | Critical |
+| DQ-MET-002 | `reading_id` | Uniqueness | Unique | 100% | Critical |
+| DQ-MET-003 | `meter_id` | Referential Integrity | References `meters.meter_id` | 100% | Critical |
+| DQ-MET-004 | `reading_date` | Completeness | Not null | 100% | High |
+| DQ-MET-005 | `consumption_kwh` | Validity | Minimum value 0 | 100% | High |
 
-The thresholds and severity levels defined in this project are demonstration governance requirements. In a production environment, these would be reviewed and approved by the relevant Data Owners and Data Stewards based on business, operational, and regulatory requirements.
+### Tariff
 
-The approved value sets used in this demonstration are synthetic business rules defined for the portfolio environment. In a production setting, permitted values would be agreed with the relevant Data Owners and Data Stewards and validated against authoritative source systems.
+| Rule ID | Column | Dimension | Check | Target | Severity |
+| --- | --- | --- | --- | ---: | --- |
+| DQ-TAR-001 | `tariff_id` | Completeness | Not null | 100% | Critical |
+| DQ-TAR-002 | `tariff_id` | Uniqueness | Unique | 100% | Critical |
+| DQ-TAR-003 | `tariff_name` | Completeness | Not null | 100% | High |
+| DQ-TAR-004 | `energy_type` | Validity | Electricity or Gas | 100% | High |
+| DQ-TAR-005 | `unit_rate` | Validity | Greater than 0 | 100% | High |
+
+The framework currently contains **27 configured data quality rules**.
+
+## Automated Validation Workflow
+
+The validation workflow can be executed against either the raw or curated data stage.
+
+```text
+data/raw/
+    ↓
+Configured Data Quality Rules
+    ↓
+Python Rule Engine
+    ↓
+Rule Results + Failed Records
+    ↓
+Governance Issue Register
+    ↓
+Approved Remediation Actions
+    ↓
+data/curated/
+    ↓
+Data Quality Revalidation
+```
+
+Baseline validation is performed against `data/raw/`. Raw datasets are retained unchanged to preserve the original source state.
+
+Approved remediation actions are applied to copies of the raw datasets to generate `data/curated/`. The same rule set is then executed against the curated datasets to verify the remediation outcome.
+
+## Validation Outputs
+
+Each validation run produces:
+
+`data-quality-results.csv`
+
+Contains rule-level results including records checked, failed records, pass rate, target, status, and severity.
+
+`failed-records.csv`
+
+Contains record-level details for individual data quality failures, including the affected record and invalid value.
+
+Outputs are stored separately by data stage:
+
+```text
+data-quality/results/
+├── raw/
+│   ├── data-quality-results.csv
+│   ├── failed-records.csv
+│   └── data-quality-issues.csv
+└── curated/
+    ├── data-quality-results.csv
+    └── failed-records.csv
+```
+
+The governance issue register is generated from raw failures because it represents issues detected in the source state before remediation.
+
+## Baseline and Revalidation Results
+
+The synthetic raw datasets intentionally contain three data quality issues to demonstrate detection, governance ownership, remediation, and revalidation.
+
+| Metric | Raw | Curated |
+| --- | ---: | ---: |
+| Rules Passed | 24 / 27 | 27 / 27 |
+| Rule Pass Rate | 88.9% | 100% |
+| Failed Records | 3 | 0 |
+| Critical Issues | 1 | 0 |
+| High Issues | 2 | 0 |
+
+The raw failures are:
+
+| Rule ID | Dataset | Record | Issue |
+| --- | --- | --- | --- |
+| DQ-CUS-003 | `customers` | C002 | Invalid customer email format |
+| DQ-MTR-003 | `meters` | M004 | Meter references an unknown customer |
+| DQ-MET-005 | `meter_readings` | R002 | Negative energy consumption |
+
+These failures are retained in the raw datasets so the baseline condition remains reproducible.
+
+## Severity Model
+
+| Severity | Meaning | Expected Governance Response |
+| --- | --- | --- |
+| Critical | Issue may compromise key relationships, identifiers, or essential data integrity. | Immediate investigation and escalation to the responsible Data Owner and Data Steward. |
+| High | Issue materially affects data reliability or business use. | Prioritised investigation and remediation by the responsible Data Steward. |
+| Medium | Issue affects data consistency but has lower immediate business impact. | Review and remediation through the normal governance process. |
+
+Severity indicates the governance priority of a failed rule. Remediation decisions still require investigation and business context.
+
+## Governance Responsibilities
+
+Data Stewards are responsible for reviewing failed records, investigating root causes, proposing remediation actions, and confirming that corrected data meets the relevant quality requirements.
+
+Data Owners are accountable for data quality within their domain and approve significant remediation or escalation decisions where required.
+
+The Data Governance Forum provides escalation and cross-domain decision support for issues that cannot be resolved within a single data domain.
+
+## Production Considerations
+
+The datasets, thresholds, severity levels, and governance roles in this repository are illustrative.
+
+In a production environment, data quality rules and thresholds would be agreed with relevant business and technical stakeholders. Validation would typically run as part of scheduled data pipelines, with monitoring, alerting, issue management, lineage, and remediation integrated with enterprise data governance and operational platforms.
