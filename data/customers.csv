@@ -1,5 +1,0 @@
-customer_id,first_name,last_name,email,phone,address,customer_type,status
-C001,Emma,Murphy,emma.murphy@example.com,0871234567,Dublin,Residential,Active
-C002,Liam,Kelly,liam.kelly@example.com,0862345678,Cork,Residential,Active
-C003,Ava,Byrne,,0853456789,Galway,Commercial,Active
-C004,Noah,Smith,noah.smith@example.com,,Dublin,Residential,Active
