@@ -107,24 +107,17 @@ These relationships support cross-domain referential integrity checks and make d
 
 ## Data Lifecycle
 
-The project separates source-like data from remediated data:
+The project separates the original synthetic source state from remediated data used for revalidation.
 
-```text
-data/raw/
-    ↓
-Data Quality Validation
-    ↓
-Failed Records
-    ↓
-Governance Issue Register
-    ↓
-Approved Remediation Actions
-    ↓
-data/curated/
-    ↓
-Data Quality Revalidation
+```mermaid
+flowchart LR
+    A["Raw Data<br/>data/raw/"] --> B["Data Quality Validation"]
+    B --> C["Governance Review"]
+    C --> D["Approved Remediation"]
+    D --> E["Curated Data<br/>data/curated/"]
+    E --> F["Data Quality Revalidation"]
 ```
 
-Files under `data/raw/` represent the immutable synthetic source state used for baseline validation.
+Files under `data/raw/` represent the unchanged synthetic source state used for initial validation.
 
-Files under `data/curated/` are generated from the raw datasets after approved remediation actions are applied. Raw datasets are retained unchanged so that data quality issues and remediation outcomes remain reproducible and auditable.
+Files under `data/curated/` are generated from the raw datasets after approved remediation actions are applied. Preserving both stages provides traceability between detected data quality issues, applied corrections, and revalidation outcomes.

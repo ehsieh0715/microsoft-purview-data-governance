@@ -1,4 +1,28 @@
 rule_id,domain,issue_description,data_owner,data_steward
+DQ-CUS-001,Customer,Missing customer ID detected,Head of Customer Operations,Customer Data Steward
+DQ-CUS-002,Customer,Duplicate customer ID detected,Head of Customer Operations,Customer Data Steward
 DQ-CUS-003,Customer,Invalid customer email format detected,Head of Customer Operations,Customer Data Steward
+DQ-CUS-004,Customer,Invalid customer type detected,Head of Customer Operations,Customer Data Steward
+DQ-CUS-005,Customer,Customer references an unknown tariff ID,Head of Customer Operations,Customer Data Steward
+DQ-CUS-006,Customer,Invalid customer status detected,Head of Customer Operations,Customer Data Steward
+DQ-BIL-001,Billing,Missing invoice ID detected,Finance Director,Billing Data Steward
+DQ-BIL-002,Billing,Duplicate invoice ID detected,Finance Director,Billing Data Steward
+DQ-BIL-003,Billing,Invoice references an unknown customer ID,Finance Director,Billing Data Steward
+DQ-BIL-004,Billing,Invalid negative invoice amount detected,Finance Director,Billing Data Steward
+DQ-BIL-005,Billing,Invalid payment status detected,Finance Director,Billing Data Steward
+DQ-BIL-006,Billing,Missing billing date detected,Finance Director,Billing Data Steward
+DQ-MTR-001,Metering,Missing meter ID detected,Head of Energy Operations,Metering Data Steward
+DQ-MTR-002,Metering,Duplicate meter ID detected,Head of Energy Operations,Metering Data Steward
 DQ-MTR-003,Metering,Meter references an unknown customer ID,Head of Energy Operations,Metering Data Steward
+DQ-MTR-004,Metering,Invalid meter type detected,Head of Energy Operations,Metering Data Steward
+DQ-MTR-005,Metering,Invalid meter status detected,Head of Energy Operations,Metering Data Steward
+DQ-MET-001,Metering,Missing meter reading ID detected,Head of Energy Operations,Metering Data Steward
+DQ-MET-002,Metering,Duplicate meter reading ID detected,Head of Energy Operations,Metering Data Steward
+DQ-MET-003,Metering,Meter reading references an unknown meter ID,Head of Energy Operations,Metering Data Steward
+DQ-MET-004,Metering,Missing meter reading date detected,Head of Energy Operations,Metering Data Steward
 DQ-MET-005,Metering,Negative energy consumption value detected,Head of Energy Operations,Metering Data Steward
+DQ-TAR-001,Tariff,Missing tariff ID detected,Commercial Director,Commercial Data Steward
+DQ-TAR-002,Tariff,Duplicate tariff ID detected,Commercial Director,Commercial Data Steward
+DQ-TAR-003,Tariff,Missing tariff name detected,Commercial Director,Commercial Data Steward
+DQ-TAR-004,Tariff,Invalid energy type detected,Commercial Director,Commercial Data Steward
+DQ-TAR-005,Tariff,Invalid tariff unit rate detected,Commercial Director,Commercial Data Steward

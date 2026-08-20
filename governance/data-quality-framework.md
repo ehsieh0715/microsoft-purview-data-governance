@@ -2,13 +2,14 @@
 
 ## Purpose
 
-This framework defines how data quality is measured, monitored, and governed across the Customer, Billing, Metering, and Tariff data domains.
+This framework defines how data quality is measured, monitored, governed, and remediated across the Customer, Billing, Metering, and Tariff data domains.
 
-Data quality rules are maintained as configuration and executed through a reusable Python rule engine. Failed records are converted into governance issues with defined ownership, followed by approved remediation and revalidation.
+Data quality requirements and governance ownership are maintained as configuration and executed through a reusable Python rule engine. Detected failures are assigned to predefined governance roles for investigation, followed by approved remediation and revalidation.
+
 
 ## Data Quality Dimensions
 
-The framework evaluates data using the following dimensions:
+The framework evaluates data using four data quality dimensions:
 
 | Dimension | Description | Example |
 | --- | --- | --- |
@@ -17,179 +18,109 @@ The framework evaluates data using the following dimensions:
 | Validity | Values conform to defined formats, ranges, or permitted values. | Energy consumption must not be negative. |
 | Referential Integrity | Relationships between datasets reference valid records. | A meter must reference an existing customer. |
 
-## Rule Configuration
 
-Data quality rules are maintained in:
+## Data Quality Configuration
 
-`config/data_quality_rules.csv`
+Data quality requirements and governance ownership are maintained separately from the Python execution logic using two configuration files:
+
+| Configuration | Purpose |
+| --- | --- |
+| [`data_quality_rules.csv`](../config/data_quality_rules.csv) | Defines what is validated, how each check is performed, and the required threshold and severity |
+| [`governance_mapping.csv`](../config/governance_mapping.csv) | Defines the business domain, issue description, Data Owner, and Data Steward associated with each rule |
+
+### Data Quality Rules
+
+`data_quality_rules.csv` is the source of truth for the validation rules executed by the Python rule engine.
 
 Each rule defines:
 
 | Field | Purpose |
 | --- | --- |
-| `rule_id` | Unique identifier for the data quality rule |
+| `rule_id` | Unique identifier for the rule |
 | `dataset` | Dataset evaluated by the rule |
 | `column` | Column evaluated by the rule |
 | `dimension` | Data quality dimension |
 | `check_type` | Validation logic executed by the rule engine |
 | `target` | Minimum required pass rate |
-| `severity` | Governance severity assigned when the rule fails |
+| `severity` | Governance priority if the rule fails |
 | `record_id_column` | Identifier used to trace failed records |
-| `parameter` | Optional configuration required by the check |
+| `parameter` | Optional value required by the validation logic |
 
-Separating rule configuration from execution logic allows validation requirements to be maintained without hard coding individual rules into the Python workflow.
+The current configuration contains **27 rules across five datasets and four business data domains**, covering completeness, uniqueness, validity, and referential integrity.
 
-## Data Quality Rules
+Rule definitions and thresholds are maintained directly in the configuration file rather than duplicated in this document.
 
-### Customer
+### Governance Mapping
 
-| Rule ID | Column | Dimension | Check | Target | Severity |
-| --- | --- | --- | --- | ---: | --- |
-| DQ-CUS-001 | `customer_id` | Completeness | Not null | 100% | Critical |
-| DQ-CUS-002 | `customer_id` | Uniqueness | Unique | 100% | Critical |
-| DQ-CUS-003 | `email` | Validity | Email format | 99% | High |
-| DQ-CUS-004 | `customer_type` | Validity | Residential or Commercial | 100% | Medium |
-| DQ-CUS-005 | `tariff_id` | Referential Integrity | References `tariffs.tariff_id` | 100% | High |
-| DQ-CUS-006 | `status` | Validity | Active or Inactive | 100% | High |
+Each rule has a corresponding entry in `governance_mapping.csv` that defines how a failure should be routed for governance review.
 
-### Billing
+| Field | Purpose |
+| --- | --- |
+| `rule_id` | Links the governance mapping to the validation rule |
+| `domain` | Business data domain associated with the rule |
+| `issue_description` | Standard description used when the rule fails |
+| `data_owner` | Role accountable for data within the domain |
+| `data_steward` | Role responsible for coordinating issue investigation and resolution |
 
-| Rule ID | Column | Dimension | Check | Target | Severity |
-| --- | --- | --- | --- | ---: | --- |
-| DQ-BIL-001 | `invoice_id` | Completeness | Not null | 100% | Critical |
-| DQ-BIL-002 | `invoice_id` | Uniqueness | Unique | 100% | Critical |
-| DQ-BIL-003 | `customer_id` | Referential Integrity | References `customers.customer_id` | 100% | Critical |
-| DQ-BIL-004 | `amount_eur` | Validity | Minimum value 0 | 100% | High |
-| DQ-BIL-005 | `payment_status` | Validity | Paid or Outstanding | 100% | High |
-| DQ-BIL-006 | `billing_date` | Completeness | Not null | 100% | High |
+Governance mappings are defined in advance for all configured rules. When a rule fails, the mapping provides the governance context used to generate the issue register.
 
-### Meter
+Only failed rules produce active governance issues.
 
-| Rule ID | Column | Dimension | Check | Target | Severity |
-| --- | --- | --- | --- | ---: | --- |
-| DQ-MTR-001 | `meter_id` | Completeness | Not null | 100% | Critical |
-| DQ-MTR-002 | `meter_id` | Uniqueness | Unique | 100% | Critical |
-| DQ-MTR-003 | `customer_id` | Referential Integrity | References `customers.customer_id` | 100% | Critical |
-| DQ-MTR-004 | `meter_type` | Validity | Smart or Traditional | 100% | Medium |
-| DQ-MTR-005 | `status` | Validity | Active or Inactive | 100% | High |
+## Data Quality Governance Workflow
 
-### Meter Reading
+The workflow combines automated validation with predefined governance ownership, human investigation, controlled remediation, and revalidation.
 
-| Rule ID | Column | Dimension | Check | Target | Severity |
-| --- | --- | --- | --- | ---: | --- |
-| DQ-MET-001 | `reading_id` | Completeness | Not null | 100% | Critical |
-| DQ-MET-002 | `reading_id` | Uniqueness | Unique | 100% | Critical |
-| DQ-MET-003 | `meter_id` | Referential Integrity | References `meters.meter_id` | 100% | Critical |
-| DQ-MET-004 | `reading_date` | Completeness | Not null | 100% | High |
-| DQ-MET-005 | `consumption_kwh` | Validity | Minimum value 0 | 100% | High |
+```mermaid
+flowchart TD
+    A["Raw Data<br/>data/raw/"] --> B["Configured DQ Rules<br/>data_quality_rules.csv"]
+    B --> C["Automated Validation<br/>Python Rule Engine"]
 
-### Tariff
+    C --> D["Rule Results<br/>data-quality-results.csv"]
+    C --> E["Failed Records<br/>failed-records.csv"]
 
-| Rule ID | Column | Dimension | Check | Target | Severity |
-| --- | --- | --- | --- | ---: | --- |
-| DQ-TAR-001 | `tariff_id` | Completeness | Not null | 100% | Critical |
-| DQ-TAR-002 | `tariff_id` | Uniqueness | Unique | 100% | Critical |
-| DQ-TAR-003 | `tariff_name` | Completeness | Not null | 100% | High |
-| DQ-TAR-004 | `energy_type` | Validity | Electricity or Gas | 100% | High |
-| DQ-TAR-005 | `unit_rate` | Validity | Greater than 0 | 100% | High |
+    E --> F["Governance Mapping<br/>Domain · Owner · Steward"]
+    F --> G["Governance Issue Register<br/>data-quality-issues.csv"]
 
-The framework currently contains **27 configured data quality rules**.
+    G --> H["Data Steward / Business Investigation"]
+    H --> I["Approved Remediation Actions<br/>remediation_actions.csv"]
 
-## Automated Validation Workflow
+    A --> J["Apply Approved Remediation"]
+    I --> J
 
-The validation workflow can be executed against either the raw or curated data stage.
-
-```text
-data/raw/
-    ↓
-Configured Data Quality Rules
-    ↓
-Python Rule Engine
-    ↓
-Rule Results + Failed Records
-    ↓
-Governance Issue Register
-    ↓
-Approved Remediation Actions
-    ↓
-data/curated/
-    ↓
-Data Quality Revalidation
+    J --> K["Curated Data<br/>data/curated/"]
+    K --> L["Revalidation<br/>Same DQ Rules"]
+    L --> M["Validated Curated Data"]
 ```
 
-Baseline validation is performed against `data/raw/`. Raw datasets are retained unchanged to preserve the original source state.
+Validation is first performed against `data/raw/`. The rule engine evaluates the datasets against the configured requirements and produces rule-level results and record-level failure details.
 
-Approved remediation actions are applied to copies of the raw datasets to generate `data/curated/`. The same rule set is then executed against the curated datasets to verify the remediation outcome.
+Failed records are combined with the predefined governance mappings to generate issues with assigned domains, Data Owners, and Data Stewards. The relevant Data Steward, business team, or technical team investigates each issue and determines the appropriate corrective action.
 
-## Validation Outputs
+Approved remediation actions are recorded separately in `remediation/remediation_actions.csv` and applied to copies of the raw datasets to produce `data/curated/`. The original raw data remains unchanged.
 
-Each validation run produces:
-
-`data-quality-results.csv`
-
-Contains rule-level results including records checked, failed records, pass rate, target, status, and severity.
-
-`failed-records.csv`
-
-Contains record-level details for individual data quality failures, including the affected record and invalid value.
-
-Outputs are stored separately by data stage:
-
-```text
-data-quality/results/
-├── raw/
-│   ├── data-quality-results.csv
-│   ├── failed-records.csv
-│   └── data-quality-issues.csv
-└── curated/
-    ├── data-quality-results.csv
-    └── failed-records.csv
-```
-
-The governance issue register is generated from raw failures because it represents issues detected in the source state before remediation.
-
-## Baseline and Revalidation Results
-
-The synthetic raw datasets intentionally contain three data quality issues to demonstrate detection, governance ownership, remediation, and revalidation.
-
-| Metric | Raw | Curated |
-| --- | ---: | ---: |
-| Rules Passed | 24 / 27 | 27 / 27 |
-| Rule Pass Rate | 88.9% | 100% |
-| Failed Records | 3 | 0 |
-| Critical Issues | 1 | 0 |
-| High Issues | 2 | 0 |
-
-The raw failures are:
-
-| Rule ID | Dataset | Record | Issue |
-| --- | --- | --- | --- |
-| DQ-CUS-003 | `customers` | C002 | Invalid customer email format |
-| DQ-MTR-003 | `meters` | M004 | Meter references an unknown customer |
-| DQ-MET-005 | `meter_readings` | R002 | Negative energy consumption |
-
-These failures are retained in the raw datasets so the baseline condition remains reproducible.
+The same configured rules are then executed against the curated datasets to verify the remediation outcome.
 
 ## Severity Model
 
 | Severity | Meaning | Expected Governance Response |
 | --- | --- | --- |
-| Critical | Issue may compromise key relationships, identifiers, or essential data integrity. | Immediate investigation and escalation to the responsible Data Owner and Data Steward. |
-| High | Issue materially affects data reliability or business use. | Prioritised investigation and remediation by the responsible Data Steward. |
-| Medium | Issue affects data consistency but has lower immediate business impact. | Review and remediation through the normal governance process. |
+| Critical | Issue may compromise key relationships, identifiers, or essential data integrity. | Immediate investigation and escalation to the responsible Data Owner and Data Steward |
+| High | Issue materially affects data reliability or business use. | Prioritised investigation and remediation by the responsible Data Steward |
+| Medium | Issue affects data consistency but has lower immediate business impact. | Review and remediation through the normal governance process |
 
-Severity indicates the governance priority of a failed rule. Remediation decisions still require investigation and business context.
+Severity determines the governance priority of a failed rule. Root cause analysis and remediation decisions require investigation and business context.
 
 ## Governance Responsibilities
 
-Data Stewards are responsible for reviewing failed records, investigating root causes, proposing remediation actions, and confirming that corrected data meets the relevant quality requirements.
-
-Data Owners are accountable for data quality within their domain and approve significant remediation or escalation decisions where required.
-
-The Data Governance Forum provides escalation and cross-domain decision support for issues that cannot be resolved within a single data domain.
+| Role | Data Quality Responsibility |
+| --- | --- |
+| Data Steward | Reviews failed records, coordinates root cause investigation, proposes remediation actions, and confirms that corrected data meets the relevant quality requirements |
+| Data Owner | Accountable for data quality within the domain and approves significant remediation or escalation decisions where required |
+| Data Governance Forum | Provides escalation and cross-domain decision support for issues that cannot be resolved within a single data domain |
+| Technical / Business Teams | Support investigation and remediation where issues originate from source systems, pipelines, or operational processes |
 
 ## Production Considerations
 
-The datasets, thresholds, severity levels, and governance roles in this repository are illustrative.
+The datasets, thresholds, severity levels, governance mappings, and roles in this repository are illustrative.
 
-In a production environment, data quality rules and thresholds would be agreed with relevant business and technical stakeholders. Validation would typically run as part of scheduled data pipelines, with monitoring, alerting, issue management, lineage, and remediation integrated with enterprise data governance and operational platforms.
+In a production environment, data quality requirements and ownership would be agreed with relevant business and technical stakeholders. Validation would typically run within scheduled data pipelines, with monitoring, alerting, workflow management, source-system remediation, lineage, and governance tooling integrated into the wider enterprise data platform.

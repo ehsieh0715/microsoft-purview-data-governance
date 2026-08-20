@@ -57,7 +57,7 @@ Raw data, curated data, data quality results, and remediation records may requir
 
 Personal data should be sufficiently accurate and up to date for its intended use.
 
-The project's data quality workflow identifies invalid records in the raw data and applies approved remediation actions to the curated data while preserving the original raw state for demonstration and auditability.
+The project's data quality workflow identifies invalid records in the raw data and applies approved remediation actions to the curated data while preserving the original raw state for reproducible validation and traceability.
 
 In a production environment, corrections to personal data may need to be performed in the authoritative source system and propagated downstream according to established data management procedures.
 

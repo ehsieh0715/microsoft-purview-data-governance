@@ -38,21 +38,24 @@ The objective is to ensure that access is granted according to business need, da
 
 Access decisions should consider relationships between datasets in addition to the sensitivity of individual fields.
 
-For example, meter readings do not directly contain customer identity information, but they can be linked to customers through:
+Meter readings do not directly contain customer identity information, but they can be linked to customer records through the meter dataset:
 
 ```text
 customers.customer_id
-        ↓
+        │
+        │ customer_id
+        ▼
 meters.customer_id
-        ↓
 meters.meter_id
-        ↓
+        │
+        │ meter_id
+        ▼
 meter_readings.meter_id
 ```
 
-Users with access to multiple related datasets may therefore be able to derive customer-level information that is not directly available from an individual dataset.
+This relationship means that access to meter_readings alone provides limited customer context, while combined access to customers, meters, and meter_readings can associate energy consumption with an identifiable customer.
 
-Cross-domain access involving Confidential data should be reviewed according to the combined business purpose and privacy impact.
+Cross-domain access involving Confidential data should therefore be reviewed based on the combined business purpose, dataset relationships, and privacy impact.
 
 ## Raw and Curated Data
 
