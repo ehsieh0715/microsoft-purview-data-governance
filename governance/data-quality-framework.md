@@ -2,125 +2,133 @@
 
 ## Purpose
 
-This framework defines how data quality is measured, monitored, governed, and remediated across the Customer, Billing, Metering, and Tariff data domains.
+This framework defines how data quality requirements are established, measured, monitored, and managed.
 
-Data quality requirements and governance ownership are maintained as configuration and executed through a reusable Python rule engine. Detected failures are assigned to predefined governance roles for investigation, followed by approved remediation and revalidation.
+Data quality controls should be business-aligned, risk-based, measurable, and traceable to the governed data they protect. Executable requirements are maintained as structured configuration so that controls can evolve independently of validation logic and governance documentation.
+
+Data quality management operates within the accountability, decision, and escalation model defined in the [Governance Framework](governance-framework.md).
 
 
 ## Data Quality Dimensions
 
-The framework evaluates data using four data quality dimensions:
+The framework evaluates data quality across four dimensions.
 
-| Dimension | Description | Example |
+| Dimension | Description |
+| --- | --- |
+| **Completeness** | Required data is present and populated. |
+| **Uniqueness** | Values expected to uniquely identify records do not contain inappropriate duplicates. |
+| **Validity** | Values conform to defined formats, ranges, permitted values, or business constraints. |
+| **Referential Integrity** | Relationships between data assets reference valid records. |
+
+Additional dimensions may be introduced where required by business context or risk.
+
+
+## Control Design
+
+Data quality controls translate business and governance requirements into measurable validation rules.
+
+Each control should define:
+
+- The data element being evaluated
+- The applicable data quality dimension
+- The validation logic
+- The required quality threshold
+- The severity of failure
+- Sufficient information to trace affected records
+
+Controls should be proportionate to the criticality and business impact of the governed data. Critical Data Elements should receive appropriate controls where quality failures could materially affect business processes, reporting, customer outcomes, or regulatory obligations.
+
+Executable data quality controls, including validation logic, thresholds, and severity, are maintained in [`data_quality_rules.csv`](../config/data_quality_rules.csv).
+
+
+## Thresholds and Severity
+
+Quality thresholds define the minimum acceptable level for each control and should reflect business requirements and risk tolerance. Thresholds should be reviewed as business requirements, data usage, or risk change.
+
+Severity represents the governance priority and potential impact of a control failure.
+
+| Severity | Meaning | Expected Response |
 | --- | --- | --- |
-| Completeness | Required data is populated. | Customer ID must not be null. |
-| Uniqueness | Identifiers expected to be unique contain no duplicates. | Reading ID must be unique. |
-| Validity | Values conform to defined formats, ranges, or permitted values. | Energy consumption must not be negative. |
-| Referential Integrity | Relationships between datasets reference valid records. | A meter must reference an existing customer. |
+| **Critical** | Failure may materially compromise essential data integrity, key relationships, or business processes. | Immediate investigation and escalation where required |
+| **High** | Failure materially affects data reliability or business use. | Prioritised investigation and remediation |
+| **Medium** | Failure affects data consistency with lower immediate business impact. | Review and remediation through the normal governance process |
+
+Severity supports prioritisation and escalation. Root cause and remediation decisions require investigation and business context.
 
 
-## Data Quality Configuration
+## Data Quality Lifecycle
 
-Data quality requirements and governance ownership are maintained separately from the Python execution logic using two configuration files:
+Data quality management follows a continuous control lifecycle.
 
-| Configuration | Purpose |
+| Stage | Purpose |
 | --- | --- |
-| [`data_quality_rules.csv`](../config/data_quality_rules.csv) | Defines what is validated, how each check is performed, and the required threshold and severity |
-| [`governance_mapping.csv`](../config/governance_mapping.csv) | Defines the business domain, issue description, Data Owner, and Data Steward associated with each rule |
+| **1. Define** | Establish measurable quality requirements based on business meaning, criticality, and risk. |
+| **2. Validate** | Execute configured controls against governed data. |
+| **3. Monitor** | Measure control performance and identify failures. |
+| **4. Investigate** | Establish the governance context, affected data, business impact, and root cause of identified issues. |
+| **5. Remediate** | Coordinate and apply approved corrective actions. |
+| **6. Revalidate** | Re-execute the relevant controls to confirm that quality requirements have been restored. |
 
-### Data Quality Rules
+Material or unresolved failures may be escalated at any stage according to the Governance Framework.
 
-`data_quality_rules.csv` is the source of truth for the validation rules executed by the Python rule engine.
+Where possible, remediation should address the underlying source of a quality issue to reduce recurrence.
 
-Each rule defines:
 
-| Field | Purpose |
-| --- | --- |
-| `rule_id` | Unique identifier for the rule |
-| `dataset` | Dataset evaluated by the rule |
-| `column` | Column evaluated by the rule |
-| `dimension` | Data quality dimension |
-| `check_type` | Validation logic executed by the rule engine |
-| `target` | Minimum required pass rate |
-| `severity` | Governance priority if the rule fails |
-| `record_id_column` | Identifier used to trace failed records |
-| `parameter` | Optional value required by the validation logic |
+## Control Execution
 
-The current configuration contains **27 rules across five datasets and four business data domains**, covering completeness, uniqueness, validity, and referential integrity.
-
-Rule definitions and thresholds are maintained directly in the configuration file rather than duplicated in this document.
-
-### Governance Mapping
-
-Each rule has a corresponding entry in `governance_mapping.csv` that defines how a failure should be routed for governance review.
-
-| Field | Purpose |
-| --- | --- |
-| `rule_id` | Links the governance mapping to the validation rule |
-| `domain` | Business data domain associated with the rule |
-| `issue_description` | Standard description used when the rule fails |
-| `data_owner` | Role accountable for data within the domain |
-| `data_steward` | Role responsible for coordinating issue investigation and resolution |
-
-Governance mappings are defined in advance for all configured rules. When a rule fails, the mapping provides the governance context used to generate the issue register.
-
-Only failed rules produce active governance issues.
-
-## Data Quality Governance Workflow
-
-The workflow combines automated validation with predefined governance ownership, human investigation, controlled remediation, and revalidation.
+The implementation separates data quality control definition, execution, and governance metadata.
 
 ```mermaid
 flowchart TD
-    A["Raw Data<br/>data/raw/"] --> B["Configured DQ Rules<br/>data_quality_rules.csv"]
-    B --> C["Automated Validation<br/>Python Rule Engine"]
+    A["Governed Data"] --> B["Configured DQ Controls"]
+    B --> C["Validation"]
+    C --> D["Quality Results"]
+    C --> E["Failed Records"]
 
-    C --> D["Rule Results<br/>data-quality-results.csv"]
-    C --> E["Failed Records<br/>failed-records.csv"]
+    E --> F["Governance Context"]
+    F --> G["Governance Issues"]
 
-    E --> F["Governance Mapping<br/>Domain · Owner · Steward"]
-    F --> G["Governance Issue Register<br/>data-quality-issues.csv"]
+    G --> H["Investigation"]
+    H --> I["Approved Remediation"]
+    I --> J["Revalidation"]
 
-    G --> H["Data Steward / Business Investigation"]
-    H --> I["Approved Remediation Actions<br/>remediation_actions.csv"]
-
-    A --> J["Apply Approved Remediation"]
-    I --> J
-
-    J --> K["Curated Data<br/>data/curated/"]
-    K --> L["Revalidation<br/>Same DQ Rules"]
-    L --> M["Validated Curated Data"]
+    J --> C
 ```
 
-Validation is first performed against `data/raw/`. The rule engine evaluates the datasets against the configured requirements and produces rule-level results and record-level failure details.
+Validation produces both control-level results and record-level failure evidence.
 
-Failed records are combined with the predefined governance mappings to generate issues with assigned domains, Data Owners, and Data Stewards. The relevant Data Steward, business team, or technical team investigates each issue and determines the appropriate corrective action.
+Where failures require governance action, they are enriched with governance metadata so that issues can be routed, investigated, remediated, and revalidated.
 
-Approved remediation actions are recorded separately in `remediation/remediation_actions.csv` and applied to copies of the raw datasets to produce `data/curated/`. The original raw data remains unchanged.
+Rule-level governance context is maintained in [`rule_governance_mapping.csv`](../config/rule_governance_mapping.csv), with domain accountability maintained in [`domain_ownership.csv`](../config/domain_ownership.csv) and data element governance metadata maintained in [`governed_data_elements.csv`](../config/governed_data_elements.csv).
 
-The same configured rules are then executed against the curated datasets to verify the remediation outcome.
+Control execution may be automated, while root cause analysis and remediation decisions remain subject to appropriate governance accountability and business context.
 
-## Severity Model
+## Data Quality Monitoring
 
-| Severity | Meaning | Expected Governance Response |
-| --- | --- | --- |
-| Critical | Issue may compromise key relationships, identifiers, or essential data integrity. | Immediate investigation and escalation to the responsible Data Owner and Data Steward |
-| High | Issue materially affects data reliability or business use. | Prioritised investigation and remediation by the responsible Data Steward |
-| Medium | Issue affects data consistency but has lower immediate business impact. | Review and remediation through the normal governance process |
+Monitoring should provide visibility into both control performance and issue outcomes.
 
-Severity determines the governance priority of a failed rule. Root cause analysis and remediation decisions require investigation and business context.
+Relevant measures may include:
 
-## Governance Responsibilities
+* Overall and domain-level quality performance
+* Control pass rates
+* Failures by severity
+* Affected record counts
+* Open data quality issues
+* Remediation outcomes
+* Revalidation success
+* Control coverage for Critical Data Elements
 
-| Role | Data Quality Responsibility |
-| --- | --- |
-| Data Steward | Reviews failed records, coordinates root cause investigation, proposes remediation actions, and confirms that corrected data meets the relevant quality requirements |
-| Data Owner | Accountable for data quality within the domain and approves significant remediation or escalation decisions where required |
-| Data Governance Forum | Provides escalation and cross-domain decision support for issues that cannot be resolved within a single data domain |
-| Technical / Business Teams | Support investigation and remediation where issues originate from source systems, pipelines, or operational processes |
+Monitoring should support prioritisation, investigation, and continuous improvement.
+
+Targets, reporting cadence, escalation thresholds, and service levels should be defined according to organisational requirements and risk appetite.
 
 ## Production Considerations
 
-The datasets, thresholds, severity levels, governance mappings, and roles in this repository are illustrative.
+This repository demonstrates the framework using synthetic data, illustrative requirements, and a configuration-driven validation workflow.
 
-In a production environment, data quality requirements and ownership would be agreed with relevant business and technical stakeholders. Validation would typically run within scheduled data pipelines, with monitoring, alerting, workflow management, source-system remediation, lineage, and governance tooling integrated into the wider enterprise data platform.
+In a production environment:
+
+* Data quality requirements, thresholds, severity levels, and control coverage should be agreed with relevant business and technical stakeholders and reviewed as requirements and risks evolve.
+* Controls should be integrated into appropriate data pipelines, monitoring, and operational workflow mechanisms.
+* Remediation should normally occur at the appropriate authoritative source where feasible.
+* Metadata, lineage, observability, and governance platforms may provide additional context, traceability, and automation.

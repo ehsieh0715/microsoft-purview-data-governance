@@ -1,0 +1,19 @@
+term,definition,domain,status
+Customer,An individual or organisation receiving energy services from the company.,Customer,Proposed
+Customer ID,A unique identifier assigned to each customer.,Customer,Proposed
+Customer Type,The category assigned to a customer based on the type of customer account.,Customer,Proposed
+Customer Status,The current operational status of a customer account.,Customer,Proposed
+Customer Email,The email address associated with a customer account and used for customer communication.,Customer,Proposed
+Invoice,A billing record representing charges issued to a customer for energy services.,Billing,Proposed
+Invoice Amount,The monetary amount charged to a customer on an invoice.,Billing,Proposed
+Billing Date,The date associated with the issuance of an invoice.,Billing,Proposed
+Payment Status,The current payment state associated with an invoice.,Billing,Proposed
+Meter,A device used to measure energy consumption.,Metering,Proposed
+Meter Type,The category assigned to an energy meter.,Metering,Proposed
+Meter Status,The current operational status of an energy meter.,Metering,Proposed
+Meter Reading,A recorded energy consumption observation associated with a meter.,Metering,Proposed
+Energy Consumption,The quantity of energy consumed over a defined period.,Metering,Proposed
+Tariff,An energy pricing plan defining how energy consumption is charged.,Tariff,Proposed
+Tariff Name,The business-facing name assigned to an energy tariff.,Tariff,Proposed
+Energy Type,The type of energy product to which a tariff applies.,Tariff,Proposed
+Unit Rate,The monetary charge applied per unit of energy consumption under a tariff.,Tariff,Proposed

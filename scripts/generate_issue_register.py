@@ -12,6 +12,7 @@ FAILED_RECORDS_FILE = (
 RULE_MAPPING_FILE = BASE_DIR / "config" / "rule_governance_mapping.csv"
 DOMAIN_OWNERSHIP_FILE = BASE_DIR / "config" / "domain_ownership.csv"
 DATA_ELEMENTS_FILE = BASE_DIR / "config" / "governed_data_elements.csv"
+BUSINESS_GLOSSARY_FILE = BASE_DIR / "config" / "business_glossary.csv"
 
 OUTPUT_FILE = (
     BASE_DIR / "data-quality" / "results" / "raw" / "data-quality-issues.csv"
@@ -23,6 +24,7 @@ def build_issue_register(
     rule_mapping,
     domain_ownership,
     data_elements,
+    business_glossary,
 ):
     issues = (
         failed_records
@@ -45,6 +47,13 @@ def build_issue_register(
             validate="many_to_one",
             suffixes=("", "_element"),
         )
+        .merge(
+            business_glossary[["term", "definition"]],
+            left_on="business_term",
+            right_on="term",
+            how="left",
+            validate="many_to_one",
+        )
     )
 
     domain_mismatch = (
@@ -58,7 +67,8 @@ def build_issue_register(
             "and governed data elements."
         )
 
-    issues = issues.drop(columns=["domain_element"])
+    issues = issues.drop(columns=["domain_element", "term"])
+    issues = issues.rename(columns={"definition": "business_definition"})
 
     issues.insert(
         0,
@@ -82,12 +92,14 @@ def main():
     rule_mapping = pd.read_csv(RULE_MAPPING_FILE)
     domain_ownership = pd.read_csv(DOMAIN_OWNERSHIP_FILE)
     data_elements = pd.read_csv(DATA_ELEMENTS_FILE)
+    business_glossary = pd.read_csv(BUSINESS_GLOSSARY_FILE)
 
     issues = build_issue_register(
         failed_records,
         rule_mapping,
         domain_ownership,
         data_elements,
+        business_glossary,
     )
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
