@@ -1,0 +1,28 @@
+rule_id,domain,issue_description
+DQ-CUS-001,Customer,Missing customer ID detected
+DQ-CUS-002,Customer,Duplicate customer ID detected
+DQ-CUS-003,Customer,Invalid customer email format detected
+DQ-CUS-004,Customer,Invalid customer type detected
+DQ-CUS-005,Customer,Customer references an unknown tariff ID
+DQ-CUS-006,Customer,Invalid customer status detected
+DQ-BIL-001,Billing,Missing invoice ID detected
+DQ-BIL-002,Billing,Duplicate invoice ID detected
+DQ-BIL-003,Billing,Invoice references an unknown customer ID
+DQ-BIL-004,Billing,Invalid negative invoice amount detected
+DQ-BIL-005,Billing,Invalid payment status detected
+DQ-BIL-006,Billing,Missing billing date detected
+DQ-MTR-001,Metering,Missing meter ID detected
+DQ-MTR-002,Metering,Duplicate meter ID detected
+DQ-MTR-003,Metering,Meter references an unknown customer ID
+DQ-MTR-004,Metering,Invalid meter type detected
+DQ-MTR-005,Metering,Invalid meter status detected
+DQ-MET-001,Metering,Missing meter reading ID detected
+DQ-MET-002,Metering,Duplicate meter reading ID detected
+DQ-MET-003,Metering,Meter reading references an unknown meter ID
+DQ-MET-004,Metering,Missing meter reading date detected
+DQ-MET-005,Metering,Negative energy consumption value detected
+DQ-TAR-001,Tariff,Missing tariff ID detected
+DQ-TAR-002,Tariff,Duplicate tariff ID detected
+DQ-TAR-003,Tariff,Missing tariff name detected
+DQ-TAR-004,Tariff,Invalid energy type detected
+DQ-TAR-005,Tariff,Invalid tariff unit rate detected

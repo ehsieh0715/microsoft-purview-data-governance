@@ -1,0 +1,5 @@
+domain,data_owner,data_steward
+Customer,Head of Customer Operations,Customer Data Steward
+Billing,Finance Director,Billing Data Steward
+Metering,Head of Energy Operations,Metering Data Steward
+Tariff,Commercial Director,Commercial Data Steward

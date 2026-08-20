@@ -1,0 +1,24 @@
+dataset,column,domain,business_term,is_cde,classification,business_description
+customers,customer_id,Customer,Customer ID,true,Internal,Unique identifier assigned to a customer
+customers,email,Customer,Customer Email,true,Personal,Primary email address used to contact the customer
+customers,customer_type,Customer,Customer Type,false,Internal,Classification of the customer as residential or commercial
+customers,tariff_id,Customer,Tariff ID,true,Internal,Tariff assigned to the customer
+
+billing,invoice_id,Billing,Invoice ID,true,Internal,Unique identifier assigned to an invoice
+billing,customer_id,Billing,Customer ID,true,Internal,Customer associated with the invoice
+billing,amount_eur,Billing,Invoice Amount,true,Confidential,Amount charged on the invoice
+billing,payment_status,Billing,Payment Status,false,Confidential,Current payment state of the invoice
+
+meters,meter_id,Metering,Meter ID,true,Internal,Unique identifier assigned to an energy meter
+meters,customer_id,Metering,Customer ID,true,Internal,Customer associated with the meter
+meters,meter_type,Metering,Meter Type,false,Internal,Type of meter installed
+
+meter_readings,reading_id,Metering,Meter Reading ID,true,Internal,Unique identifier assigned to a meter reading
+meter_readings,meter_id,Metering,Meter ID,true,Internal,Meter associated with the reading
+meter_readings,reading_date,Metering,Meter Reading Date,true,Internal,Date on which the meter reading was recorded
+meter_readings,consumption_kwh,Metering,Energy Consumption,true,Confidential,Energy consumption recorded in kilowatt-hours
+
+tariffs,tariff_id,Tariff,Tariff ID,true,Internal,Unique identifier assigned to a tariff
+tariffs,tariff_name,Tariff,Tariff Name,false,Public,Business name of the tariff
+tariffs,energy_type,Tariff,Energy Type,false,Internal,Energy commodity covered by the tariff
+tariffs,unit_rate,Tariff,Tariff Unit Rate,true,Confidential,Price charged per unit of energy
